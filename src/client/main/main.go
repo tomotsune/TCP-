@@ -1,6 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"awesomeProject/src/client"
+	"fmt"
+)
 
 func main() {
 	key := 0
@@ -21,7 +24,7 @@ func main() {
 			fmt.Scanln(&mobile)
 			fmt.Println("输入用户的密码")
 			fmt.Scanln(&pwd)
-			err := login(mobile, pwd)
+			err := client.Login(mobile, pwd)
 			if err != nil {
 				fmt.Println("登录失败, err=", err)
 			} else {

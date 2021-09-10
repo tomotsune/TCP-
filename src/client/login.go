@@ -1,4 +1,4 @@
-package main
+package client
 
 import (
 	"awesomeProject/src/common"
@@ -7,7 +7,7 @@ import (
 	"net"
 )
 
-func login(mobile, pwd string) (err error) {
+func Login(mobile, pwd string) (err error) {
 	conn, err := net.Dial("tcp", "localhost:8889")
 	defer conn.Close()
 	if err != nil {
@@ -21,11 +21,12 @@ func login(mobile, pwd string) (err error) {
 	if err != nil {
 		return
 	}
-	err = common.WritePkg(conn, msg)
+	transfer := common.Transfer{Conn: conn}
+	err = transfer.WritePkg(msg)
 	if err != nil {
 		return err
 	}
-	pkg, err := common.ReadPkg(conn)
+	pkg, err := transfer.ReadPkg()
 	if err != nil {
 		return
 	}

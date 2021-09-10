@@ -1,7 +1,7 @@
 package main
 
 import (
-	"awesomeProject/src/client"
+	"awesomeProject/src/client/process"
 	"fmt"
 )
 
@@ -24,11 +24,12 @@ func main() {
 			fmt.Scanln(&mobile)
 			fmt.Println("输入用户的密码")
 			fmt.Scanln(&pwd)
-			err := client.Login(mobile, pwd)
+			userProcess := process.UserProcess{}
+			err := userProcess.Login(mobile, pwd)
 			if err != nil {
 				fmt.Println("登录失败, err=", err)
 			} else {
-				fmt.Println("login successfully")
+				process.ShowMenu()
 				loop = false
 			}
 		case 2:

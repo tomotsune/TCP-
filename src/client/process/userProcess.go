@@ -1,4 +1,4 @@
-package client
+package process
 
 import (
 	"awesomeProject/src/common"
@@ -7,7 +7,10 @@ import (
 	"net"
 )
 
-func Login(mobile, pwd string) (err error) {
+type UserProcess struct {
+}
+
+func (receiver *UserProcess) Login(mobile, pwd string) (err error) {
 	conn, err := net.Dial("tcp", "localhost:8889")
 	defer conn.Close()
 	if err != nil {

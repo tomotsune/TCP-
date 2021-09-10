@@ -23,11 +23,11 @@ func main() {
 			fmt.Scanln(&pwd)
 			err := login(mobile, pwd)
 			if err != nil {
-				fmt.Println("login err")
+				fmt.Println("登录失败, err=", err)
 			} else {
 				fmt.Println("login successfully")
+				loop = false
 			}
-			loop = false
 		case 2:
 			fmt.Println("注册用户")
 			loop = false

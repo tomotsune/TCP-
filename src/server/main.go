@@ -2,7 +2,6 @@ package main
 
 import (
 	"awesomeProject/src/common"
-	binary "encoding/binary"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -28,29 +27,60 @@ func process(conn net.Conn) {
 	defer conn.Close()
 
 	for {
-		msg, err := readPkg(conn)
+		msg, err := common.ReadPkg(conn)
 		if err != nil {
 			if err == io.EOF {
 				fmt.Println(conn.RemoteAddr(), "断开链接")
 				return
 			}
 			fmt.Println("读取失败, err=", err)
+			return
 		}
-		fmt.Println("msg=", msg)
+		err = serverProcessMes(conn, &msg)
+		if err != nil {
+			fmt.Println("消息处理失败, err=", err)
+			return
+		}
 	}
 }
-func readPkg(conn net.Conn) (mes common.Message, err error) {
-	buf := make([]byte, 8049)
-	_, err = conn.Read(buf[:4])
+
+func serverProcessMes(conn net.Conn, msg *common.Message) (err error) {
+	switch msg.Type {
+	case common.LoginReqType:
+		err = serverProcessLogin(conn, msg)
+	//处理登录
+	default:
+		fmt.Println("消息类型不存在, 无法处理")
+	}
+	return
+}
+func serverProcessLogin(conn net.Conn, msg *common.Message) (err error) {
+	// 1. 先从msg中取出data, 并直接反序列化成LoginMsg
+	var loginReq common.LoginReq
+	err = json.Unmarshal([]byte(msg.Data), &loginReq)
 	if err != nil {
 		return
 	}
-	pkgLen := int(binary.BigEndian.Uint32(buf[:4]))
-	n, err := conn.Read(buf)
-	if n != pkgLen || err != nil {
+	// 2. 验证
+	msg = &common.Message{Type: common.LoginResType}
+	var loginRes []byte
+	if loginReq.Mobile == "root" && loginReq.Pwd == "0000" {
+		loginRes, err = json.Marshal(common.LoginRes{Code: 200})
+		if err != nil {
+			return
+		}
+	} else {
+		loginRes, err = json.Marshal(common.LoginRes{Code: 500, Error: "登录信息错误"})
+		if err != nil {
+			return
+		}
+	}
+	msg.Data = string(loginRes)
+	res, err := json.Marshal(*msg)
+	if err != nil {
 		return
 	}
-	err = json.Unmarshal(buf[:pkgLen], &mes)
+	err = common.WritePkg(conn, res)
 	if err != nil {
 		return
 	}

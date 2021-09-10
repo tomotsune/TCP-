@@ -2,8 +2,8 @@ package main
 
 import (
 	"awesomeProject/src/common"
-	"encoding/binary"
 	"encoding/json"
+	"errors"
 	"net"
 )
 
@@ -21,17 +21,21 @@ func login(mobile, pwd string) (err error) {
 	if err != nil {
 		return
 	}
-	var pkgLen [4]byte
-	binary.BigEndian.PutUint32(pkgLen[:], uint32(len(msg)))
-	n, err := conn.Write(pkgLen[:])
-	if n != 4 || err != nil {
-		return
+	err = common.WritePkg(conn, msg)
+	if err != nil {
+		return err
 	}
-	_, err = conn.Write(msg)
+	pkg, err := common.ReadPkg(conn)
 	if err != nil {
 		return
 	}
-	// TODO: 处理服务器返回的消息
-
+	res := common.LoginRes{}
+	err = json.Unmarshal([]byte(pkg.Data), &res)
+	if err != nil {
+		return
+	}
+	if res.Code != 200 {
+		err = errors.New(res.Error)
+	}
 	return
 }

@@ -11,7 +11,7 @@ type Transfer struct {
 	Buf  [8096]byte
 }
 
-func (receiver *Transfer) ReadPkg() (mes Message, err error) {
+func (receiver *Transfer) ReadPkg() (msg Message, err error) {
 	//buf := make([]byte, 8049)
 	_, err = receiver.Conn.Read(receiver.Buf[:4])
 	if err != nil {
@@ -22,22 +22,23 @@ func (receiver *Transfer) ReadPkg() (mes Message, err error) {
 	if n != pkgLen || err != nil {
 		return
 	}
-	err = json.Unmarshal(receiver.Buf[:pkgLen], &mes)
+	err = json.Unmarshal(receiver.Buf[:pkgLen], &msg)
+	return
+}
+func (receiver *Transfer) WritePkg(msg *Message) (err error) {
+	// 先发送一个长度
+	// var pkgLen [4]byte
+	msgStr, err := json.Marshal(*msg)
 	if err != nil {
 		return
 	}
-	return
-}
-func (receiver *Transfer) WritePkg(msg []byte) (err error) {
-	// 先发送一个长度
-	// var pkgLen [4]byte
-	binary.BigEndian.PutUint32(receiver.Buf[:4], uint32(len(msg)))
+	binary.BigEndian.PutUint32(receiver.Buf[:4], uint32(len(msgStr)))
 	n, err := receiver.Conn.Write(receiver.Buf[:4])
 	if n != 4 || err != nil {
 		return
 	}
-	n, err = receiver.Conn.Write(msg)
-	if n != len(msg) || err != nil {
+	n, err = receiver.Conn.Write(msgStr)
+	if n != len(msgStr) || err != nil {
 		return
 	}
 	return

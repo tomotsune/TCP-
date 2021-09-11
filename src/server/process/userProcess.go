@@ -1,45 +1,50 @@
 package process
 
 import (
-	"awesomeProject/src/common"
-	"encoding/json"
+	common "awesomeProject/src/common"
+	model2 "awesomeProject/src/common/model"
+	"awesomeProject/src/server/model"
 	"net"
 )
 
 type UserProcess struct {
-	Conn net.Conn
+	MemberDao *model.MemberDao
+	Conn      net.Conn
 }
 
-func (receiver *UserProcess) ServerProcessLogin(msg *common.Message) (err error) {
-	// 1. 先从msg中取出data, 并直接反序列化成LoginMsg
-	var loginReq common.LoginReq
-	err = json.Unmarshal([]byte(msg.Data), &loginReq)
+func NewUserProcess(conn net.Conn) *UserProcess {
+	return &UserProcess{MemberDao: model.NewMemberDao(), Conn: conn}
+}
+
+func (receiver *UserProcess) Login(member *model2.Member) (err error) {
+	// 准备相应信息
+	err = receiver.MemberDao.Login(member)
+	res := common.R{}
 	if err != nil {
-		return
-	}
-	// 2. 验证
-	ResMsg := common.Message{Type: common.LoginResType}
-	var loginRes []byte
-	if loginReq.Mobile == "root" && loginReq.Pwd == "0000" {
-		loginRes, err = json.Marshal(common.LoginRes{Code: 200})
-		if err != nil {
-			return
-		}
+		res = common.R{Code: "500", Msg: err.Error()}
 	} else {
-		loginRes, err = json.Marshal(common.LoginRes{Code: 500, Error: "登录信息错误"})
-		if err != nil {
-			return
-		}
+		res = common.R{Code: "200"}
 	}
-	ResMsg.Data = string(loginRes)
-	res, err := json.Marshal(ResMsg)
-	if err != nil {
-		return
-	}
+	// 3. 发送相应信息
+	msg := common.Message{Type: common.Res, Data: res}
 	transfer := common.Transfer{Conn: receiver.Conn}
-	err = transfer.WritePkg(res)
+	err = transfer.WritePkg(&msg)
+	return
+}
+func (receiver *UserProcess) Register(member *model2.Member) (err error) {
+	err = receiver.MemberDao.Register(member)
+	res := common.R{}
+	if err != nil {
+		res = common.R{Code: "500", Msg: err.Error()}
+	} else {
+		res = common.R{Code: "200"}
+	}
 	if err != nil {
 		return
 	}
+	// 3. 发送相应信息
+	msg := common.Message{Type: common.Res, Data: res}
+	transfer := common.Transfer{Conn: receiver.Conn}
+	err = transfer.WritePkg(&msg)
 	return
 }

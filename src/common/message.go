@@ -1,19 +1,18 @@
 package common
 
 const (
-	LoginResType = iota
-	LoginReqType
+	Res = iota
+	Login
+	Register
 )
 
 type Message struct {
-	Type int    `json:"type"`
-	Data string `json:"data"`
+	Type int         `json:"type"`
+	Data interface{} `json:"data"`
 }
-type LoginReq struct {
-	Mobile string `json:"mobile"`
-	Pwd    string `json:"pwd"`
-}
-type LoginRes struct {
-	Code  int    `json:"code"`
-	Error string `json:"error"`
+
+type R struct {
+	Code string      `json:"code"`
+	Data interface{} `json:"data"`
+	Msg  string      `json:"msg"`
 }

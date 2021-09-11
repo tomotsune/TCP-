@@ -2,7 +2,7 @@ package process
 
 import (
 	"awesomeProject/src/common"
-	"encoding/json"
+	"awesomeProject/src/common/model"
 	"errors"
 	"net"
 )
@@ -10,36 +10,44 @@ import (
 type UserProcess struct {
 }
 
-func (receiver *UserProcess) Login(mobile, pwd string) (err error) {
+func (receiver *UserProcess) Login(member *model.Member) (err error) {
 	conn, err := net.Dial("tcp", "localhost:8889")
 	defer conn.Close()
 	if err != nil {
 		return
 	}
-	req, err := json.Marshal(common.LoginReq{Mobile: mobile, Pwd: pwd})
+	transfer := common.Transfer{Conn: conn}
+	err = transfer.WritePkg(&common.Message{Type: common.Login, Data: *member})
 	if err != nil {
 		return
 	}
-	msg, err := json.Marshal(common.Message{Type: common.LoginReqType, Data: string(req)})
+	res, err := transfer.ReadPkg()
+	if err != nil {
+		return
+	}
+	if res.Data.(map[string]interface{})["code"].(string) != "200" {
+		err = errors.New(res.Data.(map[string]interface{})["msg"].(string))
+	}
+	return
+}
+
+func (receiver *UserProcess) Register(member *model.Member) (err error) {
+	conn, err := net.Dial("tcp", "localhost:8889")
+	defer conn.Close()
 	if err != nil {
 		return
 	}
 	transfer := common.Transfer{Conn: conn}
-	err = transfer.WritePkg(msg)
-	if err != nil {
-		return err
-	}
-	pkg, err := transfer.ReadPkg()
+	err = transfer.WritePkg(&common.Message{Type: common.Register, Data: *member})
 	if err != nil {
 		return
 	}
-	res := common.LoginRes{}
-	err = json.Unmarshal([]byte(pkg.Data), &res)
+	res, err := transfer.ReadPkg()
 	if err != nil {
 		return
 	}
-	if res.Code != 200 {
-		err = errors.New(res.Error)
+	if res.Data.(map[string]interface{})["code"].(string) != "200" {
+		err = errors.New(res.Data.(map[string]interface{})["msg"].(string))
 	}
 	return
 }

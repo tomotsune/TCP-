@@ -2,6 +2,7 @@ package main
 
 import (
 	"awesomeProject/src/client/process"
+	"awesomeProject/src/common/model"
 	"fmt"
 )
 
@@ -18,14 +19,14 @@ func main() {
 		fmt.Scanf("%d\n", &key)
 		switch key {
 		case 1:
-			fmt.Println("登录聊天室")
+			fmt.Println("------登录聊天室------")
 			mobile, pwd := "", ""
 			fmt.Println("输入用户的id")
 			fmt.Scanln(&mobile)
 			fmt.Println("输入用户的密码")
 			fmt.Scanln(&pwd)
 			userProcess := process.UserProcess{}
-			err := userProcess.Login(mobile, pwd)
+			err := userProcess.Login(&model.Member{Mobile: mobile, Pwd: pwd})
 			if err != nil {
 				fmt.Println("登录失败, err=", err)
 			} else {
@@ -33,8 +34,20 @@ func main() {
 				loop = false
 			}
 		case 2:
-			fmt.Println("注册用户")
-			loop = false
+			fmt.Println("--------用户注册-------")
+			mobile, pwd := "", ""
+			fmt.Println("输入用户的id")
+			fmt.Scanln(&mobile)
+			fmt.Println("输入用户的密码")
+			fmt.Scanln(&pwd)
+			userProcess := process.UserProcess{}
+			err := userProcess.Register(&model.Member{Mobile: mobile, Pwd: pwd})
+			if err != nil {
+				fmt.Println("注册失败, err=", err)
+			} else {
+				process.ShowMenu()
+				loop = false
+			}
 		case 3:
 			fmt.Println("退出系统")
 			loop = false

@@ -3,8 +3,10 @@ package process
 import (
 	"awesomeProject/src/common"
 	"fmt"
+	"io"
 	"net"
 	"os"
+	"time"
 )
 
 // 显示登录成功后的界面
@@ -22,8 +24,7 @@ func ShowMenu() {
 		fmt.Scanln(&key)
 		switch key {
 		case 1:
-			fmt.Println("显示在线用户列表")
-			loop = false
+			outputOnlineUser()
 		case 4:
 			// 不会执行defer
 			os.Exit(0)
@@ -32,16 +33,22 @@ func ShowMenu() {
 		}
 	}
 }
-
-// 和服务器保持联系
 func ServerProcessMsg(conn net.Conn) {
+	defer conn.Close()
 	transfer := common.Transfer{Conn: conn}
 	for {
-		pkg, err := transfer.ReadPkg()
-		if err != nil {
-			fmt.Println("serverProcessMsg err=", err)
-			return
+		time.Sleep(time.Millisecond * 100)
+		msg, err := transfer.ReadPkg()
+		if err != io.EOF {
+			if err != nil {
+				fmt.Println("serverProcessMsg err=", err)
+				return
+			}
+			switch msg.Type {
+			case common.NotifyUserStatus:
+				updateUserStatus(&msg)
+			}
 		}
-		fmt.Println(conn.RemoteAddr().String(), "->", pkg)
+
 	}
 }

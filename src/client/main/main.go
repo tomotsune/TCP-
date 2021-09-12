@@ -26,10 +26,11 @@ func main() {
 			fmt.Println("输入用户的密码")
 			fmt.Scanln(&pwd)
 			userProcess := process.UserProcess{}
-			err := userProcess.Login(&model.Member{Mobile: mobile, Pwd: pwd})
+			conn, err := userProcess.Login(&model.Member{Mobile: mobile, Pwd: pwd})
 			if err != nil {
 				fmt.Println("登录失败, err=", err)
 			} else {
+				go process.ServerProcessMsg(conn)
 				process.ShowMenu()
 				loop = false
 			}
@@ -44,9 +45,6 @@ func main() {
 			err := userProcess.Register(&model.Member{Mobile: mobile, Pwd: pwd})
 			if err != nil {
 				fmt.Println("注册失败, err=", err)
-			} else {
-				process.ShowMenu()
-				loop = false
 			}
 		case 3:
 			fmt.Println("退出系统")

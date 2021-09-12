@@ -8,8 +8,9 @@ import (
 )
 
 type UserProcess struct {
-	MemberDao *model.MemberDao
-	Conn      net.Conn
+	MemberDao  *model.MemberDao
+	Conn       net.Conn
+	UserMobile string
 }
 
 func NewUserProcess(conn net.Conn) *UserProcess {
@@ -24,8 +25,19 @@ func (receiver *UserProcess) Login(member *model2.Member) (err error) {
 		res = common.R{Code: "500", Msg: err.Error()}
 	} else {
 		res = common.R{Code: "200"}
+		// 加入用户列表
+		receiver.UserMobile = member.Mobile
+		userMgr.AddOnlineUser(receiver)
+		// 通知
+		err = receiver.NotifyOtherOnlineUser(&common.NotifyUserStatusMes{Status: common.OnLine, UserMobile: member.Mobile})
 	}
 	// 3. 发送相应信息
+	// 放入用户列表
+	var users []string
+	for _, v := range userMgr.onlineUsers {
+		users = append(users, v.UserMobile)
+	}
+	res.Data = users
 	msg := common.Message{Type: common.Res, Data: res}
 	transfer := common.Transfer{Conn: receiver.Conn}
 	err = transfer.WritePkg(&msg)
@@ -46,5 +58,25 @@ func (receiver *UserProcess) Register(member *model2.Member) (err error) {
 	msg := common.Message{Type: common.Res, Data: res}
 	transfer := common.Transfer{Conn: receiver.Conn}
 	err = transfer.WritePkg(&msg)
+	return
+}
+func (receiver *UserProcess) NotifyOtherOnlineUser(mus *common.NotifyUserStatusMes) (err error) {
+	// 通知某个用户
+	notify := func(conn net.Conn) (err error) {
+		msg := common.Message{Type: common.NotifyUserStatus, Data: *mus}
+		transfer := common.Transfer{Conn: conn}
+		err = transfer.WritePkg(&msg)
+		return
+	}
+	// 遍历onlineUser, 逐个发送
+	for _, v := range userMgr.onlineUsers {
+		if v.UserMobile == mus.UserMobile {
+			continue
+		}
+		err = notify(v.Conn)
+		if err != nil {
+			return
+		}
+	}
 	return
 }

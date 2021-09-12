@@ -4,7 +4,6 @@ import (
 	"awesomeProject/src/common"
 	"awesomeProject/src/common/model"
 	process2 "awesomeProject/src/server/process"
-	"errors"
 	"fmt"
 	"net"
 )
@@ -15,16 +14,16 @@ type Processor struct {
 
 func (receiver *Processor) process() (err error) {
 	transfer := common.Transfer{Conn: receiver.Conn}
-	msg, err := transfer.ReadPkg()
-	if err != nil {
-		return
+	for {
+		msg, err := transfer.ReadPkg()
+		if err != nil {
+			return err
+		}
+		err = receiver.serverProcessMes(&msg)
+		if err != nil {
+			return err
+		}
 	}
-	err = receiver.serverProcessMes(&msg)
-	if err != nil {
-		return
-	}
-	err = errors.New(receiver.Conn.RemoteAddr().String() + "断开连接")
-	return
 }
 func (receiver *Processor) serverProcessMes(msg *common.Message) (err error) {
 	userProcess := process2.NewUserProcess(receiver.Conn)

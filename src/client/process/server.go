@@ -20,11 +20,19 @@ func ShowMenu() {
 		fmt.Println("\t\t\t3. 消息列表")
 		fmt.Println("\t\t\t4. 退出系统")
 		fmt.Println("请选择(1-4)")
-
+		msmProcess := MsmProcess{conn: CurConn}
 		fmt.Scanln(&key)
 		switch key {
 		case 1:
 			outputOnlineUser()
+		case 2:
+			content := ""
+			fmt.Print("_>")
+			fmt.Scanln(&content)
+			err := msmProcess.SendMsg(content)
+			if err != nil {
+				fmt.Println("err=", err)
+			}
 		case 4:
 			// 不会执行defer
 			os.Exit(0)
@@ -34,8 +42,10 @@ func ShowMenu() {
 	}
 }
 func ServerProcessMsg(conn net.Conn) {
+	CurConn = conn
 	defer conn.Close()
 	transfer := common.Transfer{Conn: conn}
+	msmProcess := MsmProcess{}
 	for {
 		time.Sleep(time.Millisecond * 100)
 		msg, err := transfer.ReadPkg()
@@ -47,6 +57,8 @@ func ServerProcessMsg(conn net.Conn) {
 			switch msg.Type {
 			case common.NotifyUserStatus:
 				updateUserStatus(&msg)
+			case common.SMS:
+				msmProcess.ReceiveMsg(&msg)
 			}
 		}
 

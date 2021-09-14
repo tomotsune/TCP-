@@ -5,6 +5,7 @@ const (
 	Login
 	Register
 	NotifyUserStatus
+	SMS
 )
 const (
 	OffLine = iota
@@ -28,4 +29,8 @@ type R struct {
 type NotifyUserStatusMes struct {
 	UserMobile string `json:"userMobile"`
 	Status     int    `json:"status"`
+}
+type SmsMsg struct {
+	UserMobile string `json:"userMobile"`
+	Content    string `json:"content"`
 }

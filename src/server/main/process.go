@@ -27,13 +27,14 @@ func (receiver *Processor) process() (err error) {
 }
 func (receiver *Processor) serverProcessMes(msg *common.Message) (err error) {
 	userProcess := process2.NewUserProcess(receiver.Conn)
+	smsProcess := process2.SmsProcess{}
 	switch msg.Type {
 	case common.Login:
-		memberMap := msg.Data.(map[string]interface{})
-		err = userProcess.Login(&model.Member{Mobile: memberMap["mobile"].(string), Pwd: memberMap["pwd"].(string)})
+		err = userProcess.Login(&model.Member{Mobile: common.Converter(msg, "mobile").(string), Pwd: common.Converter(msg, "pwd").(string)})
 	case common.Register:
-		memberMap := msg.Data.(map[string]interface{})
-		err = userProcess.Register(&model.Member{Mobile: memberMap["mobile"].(string), Pwd: memberMap["pwd"].(string)})
+		err = userProcess.Register(&model.Member{Mobile: common.Converter(msg, "mobile").(string), Pwd: common.Converter(msg, "pwd").(string)})
+	case common.SMS:
+		err = smsProcess.SendGroup(&common.SmsMsg{Content: common.Converter(msg, "content").(string), UserMobile: common.Converter(msg, "userMobile").(string)})
 	default:
 		fmt.Println("消息类型不存在, 无法处理")
 	}

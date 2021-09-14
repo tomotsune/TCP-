@@ -4,7 +4,6 @@ import (
 	"awesomeProject/src/common"
 	"awesomeProject/src/common/model"
 	"errors"
-	"fmt"
 	"net"
 )
 
@@ -30,11 +29,13 @@ func (receiver *UserProcess) Login(member *model.Member) (conn net.Conn, err err
 		err = errors.New(common.Converter(&res, "msg").(string))
 		return
 	}
-	fmt.Println(res)
+	// 读取在线用户列表
 	users := common.Converter(&res, "data").([]interface{})
 	for _, user := range users {
 		onlineUsers = append(onlineUsers, user.(string))
 	}
+	// 存储用户, 返回存储连接
+	CurUserMobile = member.Mobile
 	return
 }
 

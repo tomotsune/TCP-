@@ -3,9 +3,14 @@ package process
 import (
 	"awesomeProject/src/common"
 	"fmt"
+	"net"
 )
 
-var onlineUsers []string
+var (
+	onlineUsers   []string
+	CurConn       net.Conn
+	CurUserMobile string
+)
 
 func updateUserStatus(msg *common.Message) {
 	userMobile := common.Converter(msg, "userMobile").(string)

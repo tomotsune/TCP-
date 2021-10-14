@@ -1,3 +1,7 @@
+// @Title  聊天室服务端
+// @Description
+// @Author  haipinHu  08/10/2021 08:23
+// @Update  haipinHu  08/10/2021 08:23
 package main
 
 import (
@@ -20,6 +24,7 @@ func main() {
 		go process(conn)
 	}
 }
+
 func process(conn net.Conn) {
 	defer conn.Close()
 	processor := Processor{Conn: conn}

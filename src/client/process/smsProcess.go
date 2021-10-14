@@ -15,17 +15,6 @@ func (receiver *MsmProcess) SendMsg(content string) (err error) {
 	msg := common.Message{Type: common.SMS, Data: msm}
 	transfer := common.Transfer{Conn: receiver.conn}
 	err = transfer.WritePkg(&msg)
-	//if err != nil {
-	//	return
-	//}
-	//res, err := transfer.ReadPkg()
-	//if err != nil {
-	//	return
-	//}
-	//if common.Converter(&res, "code").(string) != "200" {
-	//	err = errors.New(common.Converter(&res, "msg").(string))
-	//	return
-	//}
 	return
 }
 func (receiver *MsmProcess) ReceiveMsg(msg *common.Message) {

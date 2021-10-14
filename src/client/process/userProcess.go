@@ -29,7 +29,8 @@ func (receiver *UserProcess) Login(member *model.Member) (conn net.Conn, err err
 		err = errors.New(common.Converter(&res, "msg").(string))
 		return
 	}
-	// 读取在线用户列表
+
+	// 载入在线用户列表
 	users := common.Converter(&res, "data").([]interface{})
 	for _, user := range users {
 		onlineUsers = append(onlineUsers, user.(string))

@@ -1,3 +1,7 @@
+// @Title  服务总控
+// @Description
+// @Author  haipinHu  08/10/2021 08:23
+// @Update  haipinHu  08/10/2021 08:23
 package process
 
 import (
@@ -41,6 +45,8 @@ func ShowMenu() {
 		}
 	}
 }
+
+// 登录成功后. 该协程被启动, 监听所有消息
 func ServerProcessMsg(conn net.Conn) {
 	CurConn = conn
 	defer conn.Close()
@@ -61,6 +67,5 @@ func ServerProcessMsg(conn net.Conn) {
 				msmProcess.ReceiveMsg(&msg)
 			}
 		}
-
 	}
 }

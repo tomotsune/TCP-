@@ -7,6 +7,7 @@ import (
 	"net"
 )
 
+// UserProcess 用户处理
 type UserProcess struct {
 	MemberDao  *model.MemberDao
 	Conn       net.Conn
@@ -18,8 +19,10 @@ func NewUserProcess(conn net.Conn) *UserProcess {
 }
 
 func (receiver *UserProcess) Login(member *model2.Member) (err error) {
-	// 准备相应信息
+	// 注册
 	err = receiver.MemberDao.Login(member)
+
+	// 响应信息
 	res := common.R{}
 	if err != nil {
 		res = common.R{Code: "500", Msg: err.Error()}
@@ -28,8 +31,11 @@ func (receiver *UserProcess) Login(member *model2.Member) (err error) {
 		// 加入用户列表
 		receiver.UserMobile = member.Mobile
 		userMgr.AddOnlineUser(receiver)
-		// 通知
-		err = receiver.NotifyOtherOnlineUser(&common.NotifyUserStatusMes{Status: common.OnLine, UserMobile: member.Mobile})
+		// 广播上线通知
+		err = receiver.NotifyOtherOnlineUser(
+			&common.NotifyUserStatusMes{
+				Status:     common.OnLine,
+				UserMobile: member.Mobile})
 	}
 	// 3. 发送相应信息
 	// 放入用户列表
@@ -43,6 +49,7 @@ func (receiver *UserProcess) Login(member *model2.Member) (err error) {
 	err = transfer.WritePkg(&msg)
 	return
 }
+
 func (receiver *UserProcess) Register(member *model2.Member) (err error) {
 	err = receiver.MemberDao.Register(member)
 	res := common.R{}
@@ -54,16 +61,19 @@ func (receiver *UserProcess) Register(member *model2.Member) (err error) {
 	if err != nil {
 		return
 	}
-	// 3. 发送相应信息
+	// 发送响应信息
 	msg := common.Message{Type: common.Res, Data: res}
 	transfer := common.Transfer{Conn: receiver.Conn}
 	err = transfer.WritePkg(&msg)
 	return
 }
+
 func (receiver *UserProcess) NotifyOtherOnlineUser(mus *common.NotifyUserStatusMes) (err error) {
 	// 通知某个用户
 	notify := func(conn net.Conn) (err error) {
-		msg := common.Message{Type: common.NotifyUserStatus, Data: *mus}
+		msg := common.Message{
+			Type: common.NotifyUserStatus,
+			Data: *mus}
 		transfer := common.Transfer{Conn: conn}
 		err = transfer.WritePkg(&msg)
 		return

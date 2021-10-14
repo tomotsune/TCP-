@@ -6,28 +6,18 @@ import (
 	"net"
 )
 
+// Transfer 传输工具类, 定义了发送和读取信息的方法
 type Transfer struct {
 	Conn net.Conn
 	Buf  [8096]byte
 }
 
-func (receiver *Transfer) ReadPkg() (msg Message, err error) {
-	//buf := make([]byte, 8049)
-	_, err = receiver.Conn.Read(receiver.Buf[:4])
-	if err != nil {
-		return
-	}
-	pkgLen := int(binary.BigEndian.Uint32(receiver.Buf[:4]))
-	n, err := receiver.Conn.Read(receiver.Buf[:])
-	if n != pkgLen || err != nil {
-		return
-	}
-	err = json.Unmarshal(receiver.Buf[:pkgLen], &msg)
-	return
-}
+// @title    发送信息
+// @description   从Message协议数据单元读取
+// @auth      hupinHu             08/9/2021 08:23
+// @param     msg        参数类型         "解释"
+// @return    msg        Message
 func (receiver *Transfer) WritePkg(msg *Message) (err error) {
-	// 先发送一个长度
-	// var pkgLen [4]byte
 	msgStr, err := json.Marshal(*msg)
 	if err != nil {
 		return
@@ -41,5 +31,23 @@ func (receiver *Transfer) WritePkg(msg *Message) (err error) {
 	if n != len(msgStr) || err != nil {
 		return
 	}
+	return
+}
+
+// @title    接收信息
+// @description   从套接字读取数据流, 并封装到Message协议数据单元
+// @auth      hupinHu             08/9/2021 08:23
+// @return    msg        Message
+func (receiver *Transfer) ReadPkg() (msg Message, err error) {
+	_, err = receiver.Conn.Read(receiver.Buf[:4])
+	if err != nil {
+		return
+	}
+	pkgLen := int(binary.BigEndian.Uint32(receiver.Buf[:4]))
+	n, err := receiver.Conn.Read(receiver.Buf[:])
+	if n != pkgLen || err != nil {
+		return
+	}
+	err = json.Unmarshal(receiver.Buf[:pkgLen], &msg)
 	return
 }

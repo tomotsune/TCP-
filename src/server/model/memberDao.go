@@ -4,7 +4,6 @@ import (
 	"awesomeProject/src/common/model"
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/go-redis/redis/v8"
 )
 
@@ -47,7 +46,6 @@ func (receiver *MemberDao) Register(member *model.Member) (err error) {
 	if err != nil {
 		return
 	}
-	fmt.Println(string(memberStr))
 	err = receiver.rdb.Set(ctx, member.Mobile, string(memberStr), 0).Err()
 	return
 }

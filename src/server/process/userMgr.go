@@ -4,11 +4,9 @@ import (
 	"fmt"
 )
 
-/**
-
- */
 var userMgr *UserMgr
 
+// UserMgr 用户管理类, 定义了在向用户表与相应的方法
 type UserMgr struct {
 	onlineUsers map[string]*UserProcess
 }

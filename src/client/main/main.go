@@ -1,3 +1,7 @@
+// @Title  聊天室客户端
+// @Description
+// @Author  haipinHu  08/10/2021 08:23
+// @Update  haipinHu  08/10/2021 08:23
 package main
 
 import (
@@ -20,13 +24,15 @@ func main() {
 		switch key {
 		case 1:
 			fmt.Println("------登录聊天室------")
-			mobile, pwd := "", ""
+			// mobile, pwd := "", ""
+			member := model.Member{}
 			fmt.Println("输入用户的id")
-			fmt.Scanln(&mobile)
+			fmt.Scanln(&member.Mobile)
 			fmt.Println("输入用户的密码")
-			fmt.Scanln(&pwd)
+			fmt.Scanln(&member.Pwd)
+
 			userProcess := process.UserProcess{}
-			conn, err := userProcess.Login(&model.Member{Mobile: mobile, Pwd: pwd})
+			conn, err := userProcess.Login(&member)
 			if err != nil {
 				fmt.Println("登录失败, err=", err)
 			} else {
@@ -36,13 +42,15 @@ func main() {
 			}
 		case 2:
 			fmt.Println("--------用户注册-------")
-			mobile, pwd := "", ""
+			//mobile, pwd := "", ""
+			member := model.Member{}
 			fmt.Println("输入用户的id")
-			fmt.Scanln(&mobile)
+			fmt.Scanln(&member.Mobile)
 			fmt.Println("输入用户的密码")
-			fmt.Scanln(&pwd)
+			fmt.Scanln(&member.Pwd)
+
 			userProcess := process.UserProcess{}
-			err := userProcess.Register(&model.Member{Mobile: mobile, Pwd: pwd})
+			err := userProcess.Register(&member)
 			if err != nil {
 				fmt.Println("注册失败, err=", err)
 			}
